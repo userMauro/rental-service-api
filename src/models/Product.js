@@ -1,12 +1,16 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
 
-const Product = sequelize.define('Product', {
+class Product extends Model {}
+
+Product.init(
+  {
     id: {
-      type: DataTypes.STRING(3),
+      type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
+      autoIncrement: true,
       unique: true,
     },
     name: {
@@ -14,11 +18,16 @@ const Product = sequelize.define('Product', {
       allowNull: false,
       unique: false,
     },
-});
-
-Product.belongsToMany(User, {
-    through: 'UserProduct', // Nombre de la tabla intermedia
-    foreignKey: 'productId', // Nombre de la clave foránea en la tabla intermedia
-});
+  },
+  {
+    sequelize,
+    modelName: 'Product', // Nombre del modelo
+  }
+);
 
 module.exports = Product;
+
+Product.belongsToMany(User, {
+  through: 'UserProduct', // Nombre de la tabla intermedia
+  foreignKey: 'productId', // Nombre de la clave foránea en la tabla intermedia
+});
