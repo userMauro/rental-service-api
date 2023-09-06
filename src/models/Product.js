@@ -1,33 +1,49 @@
-const { DataTypes, Model } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
 
-class Product extends Model {}
-
-Product.init(
-  {
+const Product = sequelize.define('Product', {
     id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: true,
-      unique: true,
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: false,
+        type: DataTypes.STRING,
+        allowNull: false,
     },
-  },
-  {
-    sequelize,
-    modelName: 'Product', // Nombre del modelo
-  }
-);
+    barcode: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    location: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Depósito',
+    },
+    destination: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+});
 
 module.exports = Product;
 
+const User = require('./User');
+
+Product.belongsTo(User, {
+    foreignKey: 'currentOwnerId',
+    as: 'currentOwner',
+});
+
 Product.belongsToMany(User, {
-  through: 'UserProduct', // Nombre de la tabla intermedia
-  foreignKey: 'productId', // Nombre de la clave foránea en la tabla intermedia
+    through: 'ProductOwnership',
+    foreignKey: 'productId',
+    as: 'owners',
+});
+
+Product.belongsToMany(User, {
+    through: 'ProductHistory',
+    foreignKey: 'productId',
+    as: 'history',
 });

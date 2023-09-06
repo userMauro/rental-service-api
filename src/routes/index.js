@@ -1,16 +1,16 @@
 const router = require('express').Router()
 
 // middleware
-// const { authOK } = require('../controllers/authentication/auth')
+const { authOK } = require('../controllers/auth')
 
 // routes
 const auth = require('./auth')
-// const profile = require('./profile')
+const products = require('./products')
 const notFound = require('../utils/notFoundHandler')
 
 // endpoints
 router.use('/auth', auth)
-// router.use('/profile', profile)
+router.use('/products', authOK, products)
 router.use('*', notFound)
 
 module.exports = router

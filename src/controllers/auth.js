@@ -3,28 +3,56 @@ const { v4: uuidv4 } = require('uuid')
 const User = require('../models/User')
 const { createToken, checkToken } = require('../config/jwt')
 
-// const authOK = (req, res, next) => {
-//     // middleware para chequear auth en endpoints
+const authOK = (req, res, next) => {
+    // middleware para chequear auth en endpoints
+    try {
+        const auth = req.get('authorization');     // recupera la cabecera http 'authorization' (es de express)
 
-//     try {
-//         const auth = req.get('authorization');     // recupera la cabecera http 'authorization' (es de express)
+        let token = null;
 
-//         let token = null;
+        // extraigo el token de la cabecera
+        if (auth && auth.toLowerCase().startsWith('bearer')) {
+            token = auth.substring(7);
+        };
 
-//         // la cabecera sería algo asi: 'Bearer kjgalksdkglahsdalk'
-//         if (auth && auth.toLowerCase().startsWith('bearer')) {
-//             token = auth.substring(7);
-//         };
+        if (!checkToken(token)) {
+            return res.status(401).json({status: false, msg: 'Necesitas un token de sesión para realizar esta acción'});
+        };
 
-//         if (!checkToken(token)) {
-//             return res.status(401).json({status: false, msg: 'Token missing or invalid'});
-//         };
+        next()
+    } catch (error) {
+        next(error);
+    };
+}
 
-//         next()
-//     } catch (error) {
-//         next(error);
-//     };
-// }
+const isAdmin =(req, res, next) => {
+    try {
+        const auth = req.get('authorization');
+
+        let token = null;
+
+        // extraigo el token de la cabecera
+        if (auth && auth.toLowerCase().startsWith('bearer')) {
+            token = auth.substring(7);
+        };
+
+        const data = checkToken(token)
+
+        if (!data) {
+            return res.status(401).json({status: false, msg: 'Necesitas un token de sesión para realizar esta acción'});
+        };
+
+        const { role } = data;
+
+        if (role !== 'admin') {
+            return res.status(403).json({ status: false, msg: 'Acceso denegado, no tiene los permisos necesarios.' });
+        }
+
+        next();
+    } catch (error) {
+        next(error)
+    }
+}
 
 const register = async (req, res, next) => {
     try {
@@ -92,7 +120,7 @@ const resetUserPassword = async(req, res, next) => {
 
         // chequeo encontrar mail
         const user = await User.findOne({ where: { username }})
-        if (!user) return res.status(401).json({status: false, msg: 'No existe el usuario a quién quieres cambiarle la password'})
+        if (!user) return res.status(401).json({status: false, msg: 'No existe el usuario'})
 
         // hash new passwd
         const saltRounds = 10
@@ -105,4 +133,4 @@ const resetUserPassword = async(req, res, next) => {
     }
 }
 
-module.exports = { register, resetUserPassword, login };
+module.exports = { register, resetUserPassword, login, authOK, isAdmin };
