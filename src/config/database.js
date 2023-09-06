@@ -22,7 +22,6 @@ const databaseConfig = {
   },
 };
 
-
 const env = process.env.NODE_ENV;
 const dbConfig = databaseConfig[env];
 
@@ -39,3 +38,7 @@ const sequelize = new Sequelize(
 );
 
 module.exports = sequelize;
+
+// Inicializo los modelos
+require('../models/User');
+require('../models/Product');
