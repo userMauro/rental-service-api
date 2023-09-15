@@ -42,3 +42,4 @@ module.exports = sequelize;
 // Inicializo los modelos
 require('../models/User');
 require('../models/Product');
+require('../models/ScanHistory');

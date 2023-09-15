@@ -3,18 +3,19 @@ const Product = require('../models/Product')
 
 const createProduct = async (req, res, next) => {
     try {
-        const { name, image, barcode, currentOwner, location } = req.body
-        // const { name, state, lastOwner, image, record, barcode } = req.body
+        const { name, image, barcode, owner, location, addressee, state } = req.body
 
-        const exists = await Product.findOne({ where: { barcode } })
-        if (exists) return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
+        const product = await Product.findOne({ where: { barcode } })
+        if (product) return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
 
         const newProduct = await Product.create({
             name,
+            state,
             image,
             barcode,
-            currentOwner,
+            owner,
             location,
+            addressee
         })
 
         return res.status(200).json({ status: true, msg: 'Producto creado exitosamente' });
@@ -23,80 +24,70 @@ const createProduct = async (req, res, next) => {
     };
 }
 
-// const transferProduct = async (req, res, next) => {
-//     try {
-//         const { barcode, newOwner, newLocation } = req.body;
+const scanProduct = async (req, res, next) => {
+    try {
+        const { barcode } = req.body
 
-//         // Verificar si el producto existe
-//         const product = await Product.findOne({ where: { barcode } });
-//         if (!product) {
-//             return res.status(404).json({ status: false, msg: 'Producto no encontrado' });
-//         }
+        const product = await Product.findOne({ where: { barcode } })
+        if (!product) return res.status(401).json({ status: false, msg: 'No se encontró un producto con este código' })
 
-//         // Actualizar el propietario actual del producto
-//         product.currentOwner = newOwner;
-//         await product.save();
+        return res.status(200).json({ status: true, msg: product });
+    } catch (error) {
+        return next(error)
+    };
+}
 
-//         // Registrar la transferencia de propiedad en ProductOwnership
-//         await ProductOwnership.create({
-//             productId: product.id,
-//             previousOwner: product.currentOwner,
-//             newOwner,
-//             transferDate: new Date(),
-//         });
+const transferProduct = async (req, res, next) => {
+    try {
+        const { userId, productId, location, image, state, addressee } = req.body;
 
-//         // Registrar el cambio de ubicación en ProductHistory
-//         await ProductHistory.create({
-//             productId: product.id,
-//             previousLocation: product.location,
-//             newLocation,
-//             changeDate: new Date(),
-//         });
+        const user = await User.findByPk(userId);
+        const product = await Product.findByPk(productId);
 
-//         return res.status(200).json({ status: true, msg: 'Producto escaneado y transferido exitosamente' });
-//     } catch (error) {
-//         return next(error);
-//     }
-// };
+        if (!user || !product) {
+            return res.status(404).json({ status: true, msg: "Usuario/producto no encontrado" });
+        }
 
-// const checkCurrentOwner = async (req, res, next) => {
-//     try {
-//         const { barcode } = req.params;
+        // agregar lógicas de state y location, con owner y adressee
 
-//         // Buscar el producto por su código de barras
-//         const product = await Product.findOne({ where: { barcode } });
+        // Crea un nuevo registro de ScanHistory
+        const scanHistory = await ScanHistory.create({
+            scanDate: new Date(),
+            location,
+            image, // solucionar guardado de imágen en nube
+            state,
+        });
 
-//         if (!product) {
-//             return res.status(404).json({ status: false, msg: 'Producto no encontrado' });
-//         }
+        await scanHistory.setUser(user);
+        await scanHistory.setProduct(product);
 
-//         const currentOwner = product.currentOwner;
+        return res.status(200).json({ status: true, msg: "Transferencia exitosa" });
+    } catch (error) {
+        return next(error)
+    }
+}
 
-//         return res.status(200).json({ status: true, currentOwner });
-//     } catch (error) {
-//         return next(error);
-//     }
-// };
+const getProductHistory = async (req, res, next) => {
+    try {
+        const productId = req.params.productId; // Suponemos que productId se pasa como parámetro en la URL
+    
+        // Verifica si el producto existe en la base de datos
+        const product = await Product.findByPk(productId);
+    
+        if (!product) {
+            return res.status(404).json({ status: true, msg: "Producto no encontrado" });
+        }
+    
+        const history = await ScanHistory.findAll({
+            where: { ProductId: productId },    // Filtrar por productId
+            include: [{ model: User }],         // Incluir información del usuario que escaneó
+            order: [['scanDate', 'DESC']],      // Ordenar por fecha de escaneo descendente
+        });
+    
+        return res.status(200).json({ status: true, msg: history });
+    } catch (error) {
+        return next(error)
+    }
+}
 
-// const getProductHistory = async (req, res, next) => {
-//     try {
-//         const { barcode } = req.params;
-
-//         // Buscar el producto por su código de barras
-//         const product = await Product.findOne({ where: { barcode } });
-
-//         if (!product) {
-//             return res.status(404).json({ status: false, msg: 'Producto no encontrado' });
-//         }
-
-//         // Buscar todos los registros de historial para este producto
-//         const history = await ProductHistory.findAll({ where: { productId: product.id } });
-
-//         return res.status(200).json({ status: true, history });
-//     } catch (error) {
-//         return next(error);
-//     }
-// };
-
-
-module.exports = { createProduct };
+module.exports = { createProduct, scanProduct, transferProduct, getProductHistory };

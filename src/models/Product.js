@@ -16,34 +16,26 @@ const Product = sequelize.define('Product', {
         allowNull: false,
         unique: true,
     },
+    owner: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    state: {
+        type: DataTypes.ENUM('Entra', 'Sale', 'A reparar', 'De baja'),
+        allowNull: false,
+    },
+    image: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     location: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'Depósito',
     },
-    destination: {
+    addressee: {
         type: DataTypes.STRING,
         allowNull: true,
     },
 });
 
 module.exports = Product;
-
-const User = require('./User');
-
-Product.belongsTo(User, {
-    foreignKey: 'currentOwnerId',
-    as: 'currentOwner',
-});
-
-Product.belongsToMany(User, {
-    through: 'ProductOwnership',
-    foreignKey: 'productId',
-    as: 'owners',
-});
-
-Product.belongsToMany(User, {
-    through: 'ProductHistory',
-    foreignKey: 'productId',
-    as: 'history',
-});

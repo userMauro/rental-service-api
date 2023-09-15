@@ -1,9 +1,11 @@
 const authRouter = require('express').Router();
 
-// const {  } = require('../controllers/products')
+const { createProduct, scanProduct, transferProduct, getProductHistory } = require('../controllers/products');
+const { isAdmin } = require('../controllers/auth');
 
-// authRouter.post('/login', login)
-// authRouter.post('/register', isAdmin, register)
-// authRouter.put('/resetPass', isAdmin, resetUserPassword)
+authRouter.post('/create', isAdmin, createProduct);
+authRouter.get('/scan/:barcode', scanProduct);
+authRouter.put('/transfer', transferProduct);
+authRouter.get('/history/:productId', isAdmin, getProductHistory);
 
 module.exports = authRouter;

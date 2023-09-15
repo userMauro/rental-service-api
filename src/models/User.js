@@ -40,17 +40,3 @@ User.init(
 );
 
 module.exports = User;
-
-const Product = require('./Product');
-
-User.belongsToMany(Product, {
-  through: 'ProductOwnership',
-  foreignKey: 'userId',
-  as: 'productsOwned',
-});
-
-User.belongsToMany(Product, {
-  through: 'ProductHistory',
-  foreignKey: 'userId',
-  as: 'productsHistory',
-});

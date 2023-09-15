@@ -10,7 +10,7 @@ const notFound = require('../utils/notFoundHandler')
 
 // endpoints
 router.use('/auth', auth)
-router.use('/products', authOK, products)
+router.use('/product', authOK, products)
 router.use('*', notFound)
 
 module.exports = router
