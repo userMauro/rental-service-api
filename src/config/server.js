@@ -9,7 +9,7 @@ const errorHandler = require('../utils/errorHandler');
 
 // CREO EL SERVER EXPRESS Y LE PONGO UN NOMBRE
     const server = express();
-    server.name = 'Rental Service API';
+    server.name = 'Rental Service Server';
 
 // MIDDLEWARES
     server.use(express.json());

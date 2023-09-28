@@ -40,10 +40,3 @@ User.init(
 );
 
 module.exports = User;
-
-const Product = require('./Product');
-
-User.belongsToMany(Product, {
-  through: 'UserProduct', // Nombre de la tabla intermedia
-  foreignKey: 'userId', // Nombre de la clave foránea en la tabla intermedia
-});
