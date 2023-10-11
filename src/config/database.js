@@ -19,6 +19,12 @@ const databaseConfig = {
     password: process.env.PROD_DB_PASSWORD,
     database: process.env.PROD_DB_NAME,
     port: process.env.PROD_DB_PORT,
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    },
   },
 };
 
@@ -33,6 +39,7 @@ const sequelize = new Sequelize(
     host: dbConfig.host,
     dialect: dbConfig.dialect,
     port: dbConfig.port,
+    dialectOptions: dbConfig.dialectOptions,
     // Otras opciones de configuración
   }
 );
