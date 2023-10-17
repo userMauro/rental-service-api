@@ -1,0 +1,7 @@
+// LIST OF CONSTANTS
+
+// PRODUCTS STATES
+exports.PRODUCT_STATE_IN = "Entra"
+exports.PRODUCT_STATE_OUT = "Sale"
+exports.PRODUCT_STATE_REPAIR = "A reparar"
+exports.PRODUCT_STATE_DISMISSED = "De baja"

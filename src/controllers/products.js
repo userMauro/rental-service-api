@@ -1,21 +1,24 @@
 const { v4: uuidv4 } = require('uuid')
+
+const User = require('../models/User')
 const Product = require('../models/Product')
+const ScanHistory = require('../models/ScanHistory')
+
+const { PRODUCT_STATE_IN, PRODUCT_STATE_OUT } = require('../utils/constants')
 
 const createProduct = async (req, res, next) => {
     try {
-        const { name, image, barcode, owner, location, addressee, state } = req.body
+        const { name, image, barcode, location } = req.body
 
         const product = await Product.findOne({ where: { barcode } })
         if (product) return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
 
         const newProduct = await Product.create({
+            state: PRODUCT_STATE_IN,
             name,
-            state,
             image,
             barcode,
-            owner,
             location,
-            addressee
         })
 
         return res.status(200).json({ status: true, msg: 'Producto creado exitosamente' });
@@ -26,7 +29,7 @@ const createProduct = async (req, res, next) => {
 
 const scanProduct = async (req, res, next) => {
     try {
-        const { barcode } = req.body
+        const { barcode } = req.params
 
         const product = await Product.findOne({ where: { barcode } })
         if (!product) return res.status(401).json({ status: false, msg: 'No se encontró un producto con este código' })
@@ -45,18 +48,27 @@ const transferProduct = async (req, res, next) => {
         const product = await Product.findByPk(productId);
 
         if (!user || !product) {
-            return res.status(404).json({ status: true, msg: "Usuario/producto no encontrado" });
+            return res.status(404).json({ status: true, msg: "Usuario o producto no encontrado" });
         }
 
-        // agregar lógicas de state y location, con owner y adressee
-
-        // Crea un nuevo registro de ScanHistory
-        const scanHistory = await ScanHistory.create({
-            scanDate: new Date(),
+        const productUpdates = {
             location,
-            image, // solucionar guardado de imágen en nube
+            image, // (!) solucionar guardado de imagen en la nube
             state,
-        });
+            // addressee: state === PRODUCT_STATE_OUT ? addressee : null,
+            owner: state !== PRODUCT_STATE_OUT ? user.name : addressee,
+        };
+
+        await product.update(productUpdates);
+
+        const scanHistoryData = {
+            scanDate: new Date(),
+            scanOwner: user.name,
+            addressee: state === PRODUCT_STATE_OUT ? addressee : null,
+            ...productUpdates
+        };
+        
+        const scanHistory = await ScanHistory.create(scanHistoryData);
 
         await scanHistory.setUser(user);
         await scanHistory.setProduct(product);
@@ -69,9 +81,8 @@ const transferProduct = async (req, res, next) => {
 
 const getProductHistory = async (req, res, next) => {
     try {
-        const productId = req.params.productId; // Suponemos que productId se pasa como parámetro en la URL
-    
-        // Verifica si el producto existe en la base de datos
+        const productId = req.params.productId;
+
         const product = await Product.findByPk(productId);
     
         if (!product) {
@@ -79,8 +90,11 @@ const getProductHistory = async (req, res, next) => {
         }
     
         const history = await ScanHistory.findAll({
-            where: { ProductId: productId },    // Filtrar por productId
-            include: [{ model: User }],         // Incluir información del usuario que escaneó
+            where: { ProductId: productId },
+            include: [{ 
+                model: User,
+                attributes: ['username', 'name'],
+            }],
             order: [['scanDate', 'DESC']],      // Ordenar por fecha de escaneo descendente
         });
     

@@ -105,10 +105,10 @@ const login = async (req, res, next) => {
             role: user.role,
         };
 
-        const { name, role } = user
+        const { name, role, id } = user
 
         const token = createToken(data, '30d')
-        return res.status(200).json({ status: true, msg: {username, name, role, token }})
+        return res.status(200).json({ status: true, msg: { id, username, name, role, token }})
     } catch (error) {
         return next(error);
     };
