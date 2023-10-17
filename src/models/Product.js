@@ -32,10 +32,6 @@ const Product = sequelize.define('Product', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    addressee: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
 });
 
 module.exports = Product;

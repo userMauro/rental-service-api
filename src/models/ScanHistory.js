@@ -20,9 +20,17 @@ const ScanHistory = sequelize.define('ScanHistory', {
         allowNull: true,
     },
     state: {
-        type: DataTypes.ENUM('entra', 'sale', 'a reparar'),
+        type: DataTypes.ENUM('Entra', 'Sale', 'A reparar', 'De baja'),
         allowNull: false,
     },
+    addressee: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    scanOwner: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    }
 });
 
 module.exports = ScanHistory;
