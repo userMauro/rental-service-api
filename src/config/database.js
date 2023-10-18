@@ -43,3 +43,4 @@ module.exports = sequelize;
 require('../models/User');
 require('../models/Product');
 require('../models/ScanHistory');
+require('../models/Location');
