@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const fileUpload = require('express-fileupload')
 
 const routes = require('../routes/index');
 const errorHandler = require('../utils/errorHandler');
@@ -14,6 +15,7 @@ const errorHandler = require('../utils/errorHandler');
 // MIDDLEWARES
     server.use(express.json());
     process.env.NODE_ENV !== 'production' && server.use(morgan('development'));
+    
     server.use(cors());
     server.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*'); // cambiar '*' por ruta la del host cuando no es producción
@@ -22,6 +24,11 @@ const errorHandler = require('../utils/errorHandler');
         res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
         next();
     });
+
+    server.use(fileUpload({
+        useTempFiles: true,
+        tempFileDir: './images'
+    }))
    
 // RUTEO LOS PATH Y MODULARIZO
     server.use('/', routes);
