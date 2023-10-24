@@ -3,14 +3,11 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const fileUpload = require('express-fileupload')
-
 const routes = require('../routes/index');
 const errorHandler = require('../utils/errorHandler');
 
-// CREO EL SERVER EXPRESS Y LE PONGO UN NOMBRE
-    const server = express();
-    server.name = 'Rental Service Server';
+const server = express();
+server.name = 'Rental Service Server';
 
 // MIDDLEWARES
     server.use(express.json());
@@ -24,11 +21,6 @@ const errorHandler = require('../utils/errorHandler');
         res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
         next();
     });
-
-    server.use(fileUpload({
-        useTempFiles: true,
-        tempFileDir: './images'
-    }))
    
 // RUTEO LOS PATH Y MODULARIZO
     server.use('/', routes);
