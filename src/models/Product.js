@@ -24,10 +24,6 @@ const Product = sequelize.define('Product', {
         type: DataTypes.ENUM('Entra', 'Sale', 'A reparar', 'De baja'),
         allowNull: false,
     },
-    image: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     location: {
         type: DataTypes.STRING,
         allowNull: false,

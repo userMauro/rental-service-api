@@ -5,18 +5,32 @@ const Product = require('../models/Product')
 const ScanHistory = require('../models/ScanHistory')
 
 const { PRODUCT_STATE_IN, PRODUCT_STATE_OUT } = require('../utils/constants')
+const { uploadImage, getImage } = require('../config/s3')
 
 const createProduct = async (req, res, next) => {
     try {
-        const { name, image, barcode, location } = req.body
+        const { name, barcode, location } = req.body
 
         const product = await Product.findOne({ where: { barcode } })
-        if (product) return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
+        if (product) {
+            return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
+        } 
+
+        const image = { 
+            buffer: req.file?.buffer, 
+            name: barcode, 
+            mimetype: req.file?.mimetype 
+        }
+
+        const s3response = await uploadImage(image)
+
+        if (!s3response?.$metadata.httpStatusCode === 200) {
+            return res.status(401).json({ status: false, msg: 'Error al guardar la imágen' })
+        }
 
         const newProduct = await Product.create({
             state: PRODUCT_STATE_IN,
             name,
-            image,
             barcode,
             location,
         })
@@ -32,7 +46,18 @@ const scanProduct = async (req, res, next) => {
         const { barcode } = req.params
 
         const product = await Product.findOne({ where: { barcode } })
-        if (!product) return res.status(401).json({ status: false, msg: 'No se encontró un producto con este código' })
+
+        if (!product) {
+            return res.status(401).json({ status: false, msg: 'No se encontró un producto con este código' })
+        }
+
+        const imageUrl = await getImage(product?.barcode)
+
+        if (!imageUrl) {
+            return res.status(401).json({ status: false, msg: 'No se pudo obtener la imágen del producto' })
+        }
+
+        product.image = imageUrl
 
         return res.status(200).json({ status: true, msg: product });
     } catch (error) {
@@ -42,7 +67,7 @@ const scanProduct = async (req, res, next) => {
 
 const transferProduct = async (req, res, next) => {
     try {
-        const { userId, productId, location, image, state, addressee } = req.body;
+        const { userId, productId, location, state, addressee } = req.body;
 
         const user = await User.findByPk(userId);
         const product = await Product.findByPk(productId);
@@ -53,11 +78,21 @@ const transferProduct = async (req, res, next) => {
 
         const productUpdates = {
             location,
-            image, // (!) solucionar guardado de imagen en la nube
             state,
-            // addressee: state === PRODUCT_STATE_OUT ? addressee : null,
             owner: state !== PRODUCT_STATE_OUT ? user.name : addressee,
         };
+
+        const image = { 
+            buffer: req.file?.buffer, 
+            name: barcode, 
+            mimetype: req.file?.mimetype 
+        }
+
+        const s3response = await uploadImage(image)
+
+        if (!s3response?.$metadata.httpStatusCode === 200) {
+            return res.status(401).json({ status: false, msg: 'Error al guardar la imágen' })
+        }
 
         await product.update(productUpdates);
 

@@ -3,17 +3,16 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-
 const routes = require('../routes/index');
 const errorHandler = require('../utils/errorHandler');
 
-// CREO EL SERVER EXPRESS Y LE PONGO UN NOMBRE
-    const server = express();
-    server.name = 'Rental Service Server';
+const server = express();
+server.name = 'Rental Service Server';
 
 // MIDDLEWARES
     server.use(express.json());
     process.env.NODE_ENV !== 'production' && server.use(morgan('development'));
+    
     server.use(cors());
     server.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*'); // cambiar '*' por ruta la del host cuando no es producción
