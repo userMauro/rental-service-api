@@ -15,10 +15,6 @@ const ScanHistory = sequelize.define('ScanHistory', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    image: {
-        type: DataTypes.STRING, // Puedes almacenar la URL de la imagen o el nombre del archivo en el sistema de archivos.
-        allowNull: true,
-    },
     state: {
         type: DataTypes.ENUM('Entra', 'Sale', 'A reparar', 'De baja'),
         allowNull: false,

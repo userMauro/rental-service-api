@@ -1,10 +1,9 @@
-// MULTER
 const multer  = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
-// MULTER
 
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME
 const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION
@@ -19,17 +18,43 @@ const s3 = new S3Client({
     }
 })
 
-// min 54
+const multarMiddleware = (field) => {
+    return (req, res, next) => {
+        upload.single(field)(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({ status: false, msg: 'Error al cargar el archivo' });
+            }
+            next();
+        });
+    };
+};
+
 async function uploadImage(file) {
     const params = {
         Bucket: AWS_BUCKET_NAME,
-        Key: "nombre_del_archivo",
-        Body: file?.buffer,  // multer guarda la foto en memoria en file.buffer
-        ContentType: file.mimetype 
+        Key: file?.barcode,
+        Body: file?.buffer,
+        ContentType: file?.mimetype 
     }
     const command = new PutObjectCommand(params)
 
     return await s3.send(command)
 }
 
-module.exports = { uploadImage }
+async function getImage(file) {
+    const params = {
+        Bucket: AWS_BUCKET_NAME,
+        Key: file,
+    }
+
+    const command = new GetObjectCommand(params)
+    const url = await getSignedUrl(s3, command, { expiresIn: 60 })  // 60 secs
+
+    if (!url) { // a revisar: que devuelve la variable "url" y si ya es null, eliminar este condicional
+        return null
+    }
+
+    return url
+}
+
+module.exports = { multarMiddleware, uploadImage, getImage }
