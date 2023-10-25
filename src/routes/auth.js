@@ -1,6 +1,6 @@
 const authRouter = require('express').Router();
 
-const { register, login, resetUserPassword, authOK, isAdmin } = require('../controllers/auth')
+const { register, login, resetUserPassword, isAdmin } = require('../controllers/auth')
 
 authRouter.post('/login', login)
 authRouter.post('/register', isAdmin, register)

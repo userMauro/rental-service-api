@@ -11,8 +11,6 @@ const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION
 const AWS_PUBLIC_KEY = process.env.AWS_PUBLIC_KEY
 const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY
 
-
-
 const s3 = new S3Client({
     region: AWS_BUCKET_REGION,
     credentials: {
@@ -22,15 +20,16 @@ const s3 = new S3Client({
 })
 
 // min 54
-async function uploadFile(file) {
+async function uploadImage(file) {
     const params = {
         Bucket: AWS_BUCKET_NAME,
         Key: "nombre_del_archivo",
-        Body: file?.buffer  // multer guarda la foto en memoria en file.buffer
+        Body: file?.buffer,  // multer guarda la foto en memoria en file.buffer
+        ContentType: file.mimetype 
     }
     const command = new PutObjectCommand(params)
 
     return await s3.send(command)
 }
 
-module.exports = { uploadFile }
+module.exports = { uploadImage }
