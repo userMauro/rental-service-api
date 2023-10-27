@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt')
-const { v4: uuidv4 } = require('uuid')
 const User = require('../models/User')
 const { createToken, checkToken } = require('../config/jwt')
 
@@ -133,4 +132,16 @@ const resetUserPassword = async(req, res, next) => {
     }
 }
 
-module.exports = { register, resetUserPassword, login, authOK, isAdmin };
+const getUsers = async (req, res, next) => {
+    try {
+        const users = await User.findAll({
+            attributes: ['id', 'role', 'username', 'name'],
+        });
+
+        return res.status(200).json({ status: true, msg: users });
+    } catch (error) {
+        return next(error)
+    };
+}
+
+module.exports = { register, resetUserPassword, login, getUsers, authOK, isAdmin };

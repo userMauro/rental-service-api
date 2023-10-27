@@ -55,7 +55,7 @@ const scanProduct = async (req, res, next) => {
             return res.status(401).json({ status: false, msg: 'No se pudo obtener la imágen del producto' })
         }
 
-        product.image = imageUrl
+        product.setDataValue("image", imageUrl);
 
         return res.status(200).json({ status: true, msg: product });
     } catch (error) {
@@ -137,4 +137,14 @@ const getProductHistory = async (req, res, next) => {
     }
 }
 
-module.exports = { createProduct, scanProduct, transferProduct, getProductHistory };
+const getAllProducts = async (req, res, next) => {
+    try {
+        const products = await Product.findAll();
+
+        return res.status(200).json({ status: true, msg: products });
+    } catch (error) {
+        return next(error)
+    }
+}
+
+module.exports = { createProduct, scanProduct, transferProduct, getProductHistory, getAllProducts };
