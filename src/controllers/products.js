@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require('uuid')
-
 const User = require('../models/User')
 const Product = require('../models/Product')
 const ScanHistory = require('../models/ScanHistory')
@@ -13,12 +11,12 @@ const createProduct = async (req, res, next) => {
 
         const product = await Product.findOne({ where: { barcode } })
         if (product) {
-            return res.status(401).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
+            return res.status(400).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
         } 
 
         const image = { 
             buffer: req.file?.buffer, 
-            name: barcode, 
+            barcode, 
             mimetype: req.file?.mimetype 
         }
 
