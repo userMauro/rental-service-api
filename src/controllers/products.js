@@ -65,7 +65,7 @@ const scanProduct = async (req, res, next) => {
 
 const transferProduct = async (req, res, next) => {
     try {
-        const { userId, productId, location, state, addressee } = req.body;
+        const { userId, productId, location, state, addressee, barcode } = req.body;
 
         const user = await User.findByPk(userId);
         const product = await Product.findByPk(productId);
