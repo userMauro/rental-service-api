@@ -82,7 +82,7 @@ const transferProduct = async (req, res, next) => {
 
         const image = { 
             buffer: req.file?.buffer, 
-            name: barcode, 
+            barcode, 
             mimetype: req.file?.mimetype 
         }
 
