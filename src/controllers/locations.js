@@ -24,7 +24,7 @@ const createLocation = async (req, res, next) => {
         const location = await Location.findOne({ where: { name } })
 
         if (location) {
-            return res.status(401).json({ status: false, msg: 'Ya existe una locación con ese nombre' })
+            return res.status(400).json({ status: false, msg: 'Ya existe una locación con ese nombre' })
         } 
 
         await Location.create({ name })

@@ -59,7 +59,7 @@ const register = async (req, res, next) => {
 
         // chequeo no repetir email
         const exists = await User.findOne({ where: { username } })
-        if (exists) return res.status(401).json({ status: false, msg: 'El nombre de usuario ya está en uso' })
+        if (exists) return res.status(400).json({ status: false, msg: 'El nombre de usuario ya está en uso' })
 
         // hashing password
         const saltRounds = 10
@@ -85,7 +85,7 @@ const login = async (req, res, next) => {
         // reviso si ya está logueado
         const logged = req.get('authorization');
         if (logged && logged.toLowerCase().startsWith('bearer')) {
-            return res.status(401).json({status: false, msg: 'Ya hay una sesión abierta'})
+            return res.status(400).json({status: false, msg: 'Ya hay una sesión abierta'})
         }
 
         const user = await User.findOne({ where: { username }})
@@ -94,7 +94,7 @@ const login = async (req, res, next) => {
             ? false
             : await bcrypt.compare(password, user.passwordHash)
         
-        if (!passwordCorrect) return res.status(401).json({status: false, msg: 'Usuario o contraseña incorrectos'})
+        if (!passwordCorrect) return res.status(400).json({status: false, msg: 'Usuario o contraseña incorrectos'})
 
         // si logueo bien, agrego la data que va a ir en el token codificado
         const data = {
@@ -119,7 +119,7 @@ const resetUserPassword = async(req, res, next) => {
 
         // chequeo encontrar mail
         const user = await User.findOne({ where: { username }})
-        if (!user) return res.status(401).json({status: false, msg: 'No existe el usuario'})
+        if (!user) return res.status(400).json({status: false, msg: 'No existe el usuario'})
 
         // hash new passwd
         const saltRounds = 10
