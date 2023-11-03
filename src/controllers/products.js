@@ -14,6 +14,10 @@ const createProduct = async (req, res, next) => {
             return res.status(400).json({ status: false, msg: 'Ya existe un producto con el código de barras ingresado' })
         } 
 
+        if (!req.file?.buffer) {
+            return res.status(404).json({ status: false, msg: 'Es necesario cargar una foto para crear un producto' })
+        }
+
         const image = { 
             buffer: req.file?.buffer, 
             barcode, 
@@ -23,7 +27,7 @@ const createProduct = async (req, res, next) => {
         const s3response = await uploadImage(image)
 
         if (!s3response?.$metadata.httpStatusCode === 200) {
-            return res.status(401).json({ status: false, msg: 'Error al guardar la imágen' })
+            return res.status(400).json({ status: false, msg: 'Error al guardar la imágen' })
         }
 
         const newProduct = await Product.create({
@@ -46,13 +50,13 @@ const scanProduct = async (req, res, next) => {
         const product = await Product.findOne({ where: { barcode } })
 
         if (!product) {
-            return res.status(401).json({ status: false, msg: 'No se encontró un producto con este código' })
+            return res.status(404).json({ status: false, msg: 'No se encontró un producto con este código' })
         }
 
         const imageUrl = await getImage(product?.barcode)
 
         if (!imageUrl) {
-            return res.status(401).json({ status: false, msg: 'No se pudo obtener la imágen del producto' })
+            return res.status(400).json({ status: false, msg: 'No se pudo obtener la imágen del producto' })
         }
 
         product.setDataValue("image", imageUrl);
@@ -74,6 +78,10 @@ const transferProduct = async (req, res, next) => {
             return res.status(404).json({ status: true, msg: "Usuario o producto no encontrado" });
         }
 
+        if (!req.file?.buffer) {
+            return res.status(404).json({ status: false, msg: 'Es necesario cargar una foto para crear un producto' })
+        }
+
         const productUpdates = {
             location,
             state,
@@ -89,7 +97,7 @@ const transferProduct = async (req, res, next) => {
         const s3response = await uploadImage(image)
 
         if (!s3response?.$metadata.httpStatusCode === 200) {
-            return res.status(401).json({ status: false, msg: 'Error al guardar la imágen' })
+            return res.status(400).json({ status: false, msg: 'Error al guardar la imágen' })
         }
 
         await product.update(productUpdates);
