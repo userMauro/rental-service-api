@@ -145,14 +145,18 @@ const getProductHistory = async (req, res, next) => {
     }
 }
 
-const getAllProducts = async (req, res, next) => {
+const getProducts = async (req, res, next) => {
     try {
-        const products = await Product.findAll();
-
+        const location = req.params?.location;
+    
+        const queryOptions = location ? { where: { location } } : {};
+    
+        const products = await Product.findAll(queryOptions);
+    
         return res.status(200).json({ status: true, msg: products });
     } catch (error) {
-        return next(error)
+        return next(error);
     }
-}
+};
 
-module.exports = { createProduct, scanProduct, transferProduct, getProductHistory, getAllProducts };
+module.exports = { createProduct, scanProduct, transferProduct, getProductHistory, getProducts };
